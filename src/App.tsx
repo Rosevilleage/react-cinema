@@ -1,11 +1,13 @@
 import React from "react";
 import Header from "./components/Header";
 import styled from "styled-components";
+import Theater from "./components/Theater";
 
 function App() {
   return (
     <AppContainer className="App">
       <Header />
+      <Theater />
     </AppContainer>
   );
 }
