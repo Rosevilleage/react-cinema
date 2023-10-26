@@ -1,7 +1,22 @@
 import React from "react";
+import Header from "./components/Header";
+import styled from "styled-components";
 
 function App() {
-  return <div className="App"></div>;
+  return (
+    <AppContainer className="App">
+      <Header />
+    </AppContainer>
+  );
 }
+
+const AppContainer = styled.div`
+  width: 100%;
+  max-width: 1000px;
+  min-height: 100vh;
+  margin: 0 auto;
+  border-left: 1px solid lightgray;
+  border-right: 1px solid lightgray;
+`;
 
 export default App;
