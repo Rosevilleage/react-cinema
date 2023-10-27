@@ -1,31 +1,48 @@
 import { styled } from "styled-components";
+import { Moviegoers } from "./TheatergoersAndPriceInfo";
 
-// interface TheatergoersProps {
-// 	numOfTheatergoers: {adult: number, youth: number};
-// 	theatergoersBtnhandler: (type:string, num: number) => void;
-// 	handicapChecked: boolean;
-// 	handicapCheckboxHandler: () => void;
-// }
+interface TheatergoersProps {
+  moviegoers: Moviegoers;
+  isHandicap: boolean;
+  theaterClickHandler: (name: keyof Moviegoers, num: number) => void;
+  handicapCheckboxHandler: () => void;
+}
 
-export default function Theatergoers() {
+type TheaterType = "어른" | "어린이/청소년";
+
+export default function Theatergoers({
+  moviegoers,
+  isHandicap,
+  handicapCheckboxHandler,
+  theaterClickHandler,
+}: TheatergoersProps) {
   const theaterName = ["어른", "어린이/청소년"] as const;
   const buttonNums = Array.from({ length: 9 }, (_, i) => i);
-  const numOfTheatergoers = {
-    // state로 만들어서 props로 받아오기
-    adult: 0,
-    youth: 0,
-  };
-  type TheaterType = "어른" | "어린이/청소년";
   const classNameCreator = (name: TheaterType, num: number) => {
     const key = name === "어른" ? "adult" : "youth";
-    return numOfTheatergoers[key] === num ? "toggle" : "";
+    return moviegoers[key] === num ? "toggle" : "";
   };
+
+  const theaterTpye = (name: TheaterType) =>
+    name === "어른" ? "adult" : "youth";
+  const totalmoviegeors = moviegoers.adult + moviegoers.youth;
+  const handicapDisabled =
+    (!isHandicap && totalmoviegeors > 3) || totalmoviegeors === 0
+      ? true
+      : false;
+
   return (
     <TheatergoersArea>
       <CheckboxRow>
         <p>* 최대 8명 선택 가능</p>
         <span>
-          <input id="checkHandicap" type="checkbox" />
+          <input
+            id="checkHandicap"
+            type="checkbox"
+            checked={isHandicap}
+            onChange={handicapCheckboxHandler}
+            disabled={handicapDisabled}
+          />
           <label htmlFor="checkHandicap">장애인</label>
         </span>
       </CheckboxRow>
@@ -37,6 +54,7 @@ export default function Theatergoers() {
               <TheaterBtn
                 key={`${name}${num}`}
                 className={classNameCreator(name, num)}
+                onClick={() => theaterClickHandler(theaterTpye(name), num)}
               >
                 {num}
               </TheaterBtn>

@@ -1,13 +1,50 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import TheatergoersAndPriceInfo from "./theaterMain/TheatergoersAndPriceInfo";
 import Seats from "./theaterMain/Seats";
-
+// const seatBuffInitialState = {
+//   A: [0],
+//   B: [0],
+//   C: [0]
+// }
+const moviegoersInitialState = {
+  adult: 0,
+  youth: 0,
+};
 export default function Theater() {
+  // const [seatBuff, setSeatBuff] = useState(seatBuffInitialState);
+  const [moviegoers, setMoviegoers] = useState(moviegoersInitialState);
+  const [isHandicap, setIsHandicap] = useState(false);
+
+  const theaterClickHandler = (name: keyof typeof moviegoers, num: number) => {
+    const otherName = name === "adult" ? "youth" : "adult";
+    const expectedMoviegoers = moviegoers[otherName] + num;
+    if (isHandicap) {
+      if (expectedMoviegoers > 3) {
+        window.alert("장애인 좌석은 최대 3석입니다. 3인 이하로 선택해 주세요.");
+        return;
+      }
+    }
+    setMoviegoers({
+      ...moviegoers,
+      [name]: num,
+    });
+    if (moviegoers.adult + moviegoers.youth === 0) setIsHandicap(false);
+  };
+
+  const handicapCheckboxHandler = () => {
+    setIsHandicap(!isHandicap);
+  };
+
   return (
     <TheaterContainer>
       <TheaterTitle>인원/좌석</TheaterTitle>
-      <TheatergoersAndPriceInfo />
+      <TheatergoersAndPriceInfo
+        moviegoers={moviegoers}
+        isHandicap={isHandicap}
+        theaterClickHandler={theaterClickHandler}
+        handicapCheckboxHandler={handicapCheckboxHandler}
+      />
       <Seats />
       <ResetBox>
         <button>좌석 선택 초기화</button>

@@ -2,10 +2,31 @@ import styled from "styled-components";
 import Theatergoers from "./Theatergoers";
 import PriceInfo from "./PriceInfo";
 
-export default function TheatergoersAndPriceInfo() {
+export interface Moviegoers {
+  adult: number;
+  youth: number;
+}
+interface TheatergoersAndPriceInfoProps {
+  moviegoers: Moviegoers;
+  isHandicap: boolean;
+  theaterClickHandler: (name: keyof Moviegoers, num: number) => void;
+  handicapCheckboxHandler: () => void;
+}
+
+export default function TheatergoersAndPriceInfo({
+  moviegoers,
+  isHandicap,
+  handicapCheckboxHandler,
+  theaterClickHandler,
+}: TheatergoersAndPriceInfoProps) {
   return (
     <TheatergoersAndPriceInfoContainer>
-      <Theatergoers />
+      <Theatergoers
+        moviegoers={moviegoers}
+        theaterClickHandler={theaterClickHandler}
+        isHandicap={isHandicap}
+        handicapCheckboxHandler={handicapCheckboxHandler}
+      />
       <PriceInfo remainSeats={39} />
     </TheatergoersAndPriceInfoContainer>
   );
