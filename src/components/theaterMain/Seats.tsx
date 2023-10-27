@@ -1,10 +1,11 @@
 import styled from "styled-components";
-// const seatBuff = {
-//   A: [0],
-//   B: [0],
-//   C: [0]
-// }
-export default function Seats() {
+import { SeatsActivation } from "../Theater";
+
+interface SeatsProps {
+  seatsActivation: SeatsActivation;
+}
+
+export default function Seats({ seatsActivation }: SeatsProps) {
   const seatsRowTitle = ["A", "B", "C"] as const;
   const seatsRowData = Array.from({ length: 13 }, (_, i) => i + 1);
 
@@ -18,11 +19,12 @@ export default function Seats() {
             const seatType =
               title === "C" ? (num < 11 ? "sale" : "handicap") : "general";
             // const clicked = seatBuff[title].includes(num)
+            const disabled = seatsActivation[seatType];
             return (
               <SeatBtn
                 key={`${title}-${num}`}
                 $seatType={seatType}
-                $disabled={true}
+                $disabled={!disabled}
                 $clicked={false}
               >
                 {num}
