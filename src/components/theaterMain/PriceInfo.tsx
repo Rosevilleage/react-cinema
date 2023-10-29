@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 interface PriceOnfoProps {
-  remainSeats: number;
+  seatsLength: number;
   price?: number;
   showTime?: {
     date: string;
@@ -9,12 +9,13 @@ interface PriceOnfoProps {
   };
 }
 const TOTAL_SEATS_LENGTH = 39;
-export default function PriceInfo({ remainSeats }: PriceOnfoProps) {
+export default function PriceInfo({ seatsLength }: PriceOnfoProps) {
+  const remainingSeats = TOTAL_SEATS_LENGTH - seatsLength;
   return (
     <PriceInfoArea>
       <p>
         리엑트 씨네마 | 타입관 | 잔여석{" "}
-        <span className="remain">{remainSeats}</span>/{TOTAL_SEATS_LENGTH}
+        <span className="remain">{remainingSeats}</span>/{TOTAL_SEATS_LENGTH}
       </p>
       <p>2023.10.26(목) 14:50 ~ 17:00</p>
       <p>

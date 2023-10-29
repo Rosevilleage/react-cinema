@@ -39,6 +39,7 @@ export default function Theater() {
   const [seatsActivation, setSeatsActivation] = useState(
     seatsActivationInitialState
   );
+  const seatsLength = seatBuff.cnt.adult + seatBuff.cnt.youth;
 
   const resetHandler = () => {
     setSeatBuff(seatBuffInitialState);
@@ -216,6 +217,7 @@ export default function Theater() {
         isHandicap={isHandicap}
         theaterClickHandler={theaterClickHandler}
         handicapCheckboxHandler={handicapCheckboxHandler}
+        seatsLength={seatsLength}
       />
       <Seats
         seatsActivation={seatsActivation}
