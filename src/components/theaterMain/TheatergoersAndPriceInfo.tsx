@@ -9,6 +9,7 @@ interface TheatergoersAndPriceInfoProps {
   theaterClickHandler: (name: keyof Moviegoers, num: number) => void;
   handicapCheckboxHandler: () => void;
   seatsLength: number;
+  price: number;
 }
 
 export default function TheatergoersAndPriceInfo({
@@ -17,6 +18,7 @@ export default function TheatergoersAndPriceInfo({
   handicapCheckboxHandler,
   theaterClickHandler,
   seatsLength,
+  price,
 }: TheatergoersAndPriceInfoProps) {
   return (
     <TheatergoersAndPriceInfoContainer>
@@ -26,7 +28,7 @@ export default function TheatergoersAndPriceInfo({
         isHandicap={isHandicap}
         handicapCheckboxHandler={handicapCheckboxHandler}
       />
-      <PriceInfo seatsLength={seatsLength} />
+      <PriceInfo seatsLength={seatsLength} price={price} />
     </TheatergoersAndPriceInfoContainer>
   );
 }

@@ -39,7 +39,7 @@ export default function Theater() {
   const [seatsActivation, setSeatsActivation] = useState(
     seatsActivationInitialState
   );
-  // const [price, setPrice] = useState(0);
+  const [price, setPrice] = useState(0);
   const seatsLength = seatBuff.cnt.adult + seatBuff.cnt.youth;
 
   const resetHandler = () => {
@@ -47,7 +47,45 @@ export default function Theater() {
     setMoviegoers(moviegoersInitialState);
     setIsHandicap(false);
     setSeatsActivation(seatsActivationInitialState);
+    setPrice(0);
   };
+
+  const seatsOneTypeActivation = (seatType: keyof SeatsActivation) => {
+    const [disabledSeat_1, disabledSeat_2] = Object.keys(
+      seatsActivation
+    ).filter((seat) => seat !== seatType);
+    setSeatsActivation({
+      ...seatsActivation,
+      [seatType]: true,
+      [disabledSeat_1]: false,
+      [disabledSeat_2]: false,
+    });
+  };
+
+  const priceChangeHandler = (
+    seatType: SeatType,
+    moviegoersType: keyof Moviegoers,
+    operator: "+" | "-"
+  ) => {
+    const caculator = {
+      "+": (num: number, discount: number) => price + num * discount,
+      "-": (num: number, discount: number) => price - num * discount,
+    };
+    const targetNumber =
+      seatType === "handicap"
+        ? 5000
+        : moviegoersType === "adult"
+        ? 10000
+        : 7000;
+
+    if (seatType === "sale") {
+      setPrice(caculator[operator](targetNumber, 0.8));
+    } else {
+      setPrice(caculator[operator](targetNumber, 1));
+    }
+    console.log(seatType, moviegoersType);
+  };
+
   const theaterClickHandler = (name: keyof typeof moviegoers, num: number) => {
     const otherName = name === "adult" ? "youth" : "adult";
     const expectedMoviegoers = moviegoers[otherName] + num;
@@ -56,6 +94,7 @@ export default function Theater() {
       setSeatsActivation(seatsActivationInitialState);
       setSeatBuff(seatBuffInitialState);
       setIsHandicap(false);
+      setPrice(0);
     } else {
       if (isHandicap) {
         if (expectedMoviegoers > 3) {
@@ -64,11 +103,7 @@ export default function Theater() {
           );
           return;
         } else {
-          setSeatsActivation({
-            general: false,
-            sale: false,
-            handicap: true,
-          });
+          seatsOneTypeActivation("handicap");
         }
       } else {
         const { adult, youth } = seatBuff.cnt;
@@ -79,7 +114,10 @@ export default function Theater() {
             )
           )
             return;
-          else setSeatBuff(seatBuffInitialState);
+          else {
+            setSeatBuff(seatBuffInitialState);
+            setPrice(0);
+          }
         } else if (expectedMoviegoers < 2) {
           setSeatsActivation({
             general: true,
@@ -132,7 +170,7 @@ export default function Theater() {
   ) => {
     if (disabled) return;
     const totalMoviegors = moviegoers.adult + moviegoers.youth;
-    if (totalMoviegors === 0) return;
+    // if (totalMoviegors === 0) return;
 
     const { adult, youth } = seatBuff.cnt;
     const currentTotalCnt = adult + youth;
@@ -140,7 +178,6 @@ export default function Theater() {
     if (!seatBuff[line].includes(seatNum)) {
       const moviegoersType = adult < moviegoers.adult ? "adult" : "youth";
       const expectedCount = moviegoersType === "adult" ? adult + 1 : youth + 1;
-
       const newbuff = {
         ...seatBuff,
         [line]: [...seatBuff[line], seatNum],
@@ -151,16 +188,15 @@ export default function Theater() {
       };
       setSeatBuff(newbuff);
 
+      priceChangeHandler(seatType, moviegoersType, "+");
+
       const expectedTotalCount =
         moviegoersType === "adult"
           ? youth + expectedCount
           : adult + expectedCount;
 
       if (expectedTotalCount < totalMoviegors) {
-        setSeatsActivation({
-          ...seatsActivation,
-          [seatType]: true,
-        });
+        seatsOneTypeActivation(seatType);
       } else if (expectedTotalCount === totalMoviegors) {
         setSeatsActivation(seatsActivationInitialState);
       }
@@ -183,28 +219,13 @@ export default function Theater() {
       };
       setSeatBuff(newbuff);
 
+      priceChangeHandler(seatType, moviegoersType, "-");
+
       if (
         expectedTotalCount < totalMoviegors &&
         totalMoviegors === currentTotalCnt
       ) {
-        if (seatType === "handicap") {
-          setSeatsActivation({
-            ...seatsActivation,
-            [seatType]: true,
-          });
-        } else if (seatType === "general" && totalMoviegors === 1) {
-          setSeatsActivation({
-            handicap: false,
-            general: true,
-            sale: false,
-          });
-        } else {
-          setSeatsActivation({
-            handicap: false,
-            general: true,
-            sale: true,
-          });
-        }
+        seatsOneTypeActivation(seatType);
       }
     }
   };
@@ -218,6 +239,7 @@ export default function Theater() {
         theaterClickHandler={theaterClickHandler}
         handicapCheckboxHandler={handicapCheckboxHandler}
         seatsLength={seatsLength}
+        price={price}
       />
       <Seats
         seatsActivation={seatsActivation}

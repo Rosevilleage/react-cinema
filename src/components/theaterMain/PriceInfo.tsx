@@ -2,14 +2,14 @@ import styled from "styled-components";
 
 interface PriceOnfoProps {
   seatsLength: number;
-  price?: number;
+  price: number;
   showTime?: {
     date: string;
     time: string;
   };
 }
 const TOTAL_SEATS_LENGTH = 39;
-export default function PriceInfo({ seatsLength }: PriceOnfoProps) {
+export default function PriceInfo({ seatsLength, price }: PriceOnfoProps) {
   const remainingSeats = TOTAL_SEATS_LENGTH - seatsLength;
   return (
     <PriceInfoArea>
@@ -19,7 +19,7 @@ export default function PriceInfo({ seatsLength }: PriceOnfoProps) {
       </p>
       <p>2023.10.26(목) 14:50 ~ 17:00</p>
       <p>
-        총 금액 <span className="price">0</span>원
+        총 금액 <span className="price">{price}</span>원
       </p>
     </PriceInfoArea>
   );
