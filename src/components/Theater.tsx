@@ -39,6 +39,7 @@ export default function Theater() {
   const [seatsActivation, setSeatsActivation] = useState(
     seatsActivationInitialState
   );
+  // const [price, setPrice] = useState(0);
   const seatsLength = seatBuff.cnt.adult + seatBuff.cnt.youth;
 
   const resetHandler = () => {
@@ -54,6 +55,7 @@ export default function Theater() {
     if (expectedMoviegoers === 0) {
       setSeatsActivation(seatsActivationInitialState);
       setSeatBuff(seatBuffInitialState);
+      setIsHandicap(false);
     } else {
       if (isHandicap) {
         if (expectedMoviegoers > 3) {
@@ -93,7 +95,6 @@ export default function Theater() {
         }
       }
     }
-    if (expectedMoviegoers === 0) setIsHandicap(false);
     setMoviegoers({
       ...moviegoers,
       [name]: num,
