@@ -149,8 +149,7 @@ export default function Theater() {
         },
       };
       setSeatBuff(newbuff);
-      console.log(expectedCount);
-      console.log(totalMoviegors);
+
       const expectedTotalCount =
         moviegoersType === "adult"
           ? youth + expectedCount
