@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import { Moviegoers } from "./TheatergoersAndPriceInfo";
+import { Moviegoers } from "../Theater";
 
 interface TheatergoersProps {
   moviegoers: Moviegoers;

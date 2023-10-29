@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import TheatergoersAndPriceInfo from "./theaterMain/TheatergoersAndPriceInfo";
 import Seats from "./theaterMain/Seats";
+
 const seatBuffInitialState = {
   A: [0],
   B: [0],
@@ -11,6 +12,11 @@ const seatBuffInitialState = {
     youth: 0,
   },
 };
+
+export type SeatsLine = "A" | "B" | "C";
+export type SeatType = "general" | "sale" | "handicap";
+export type SeatBuff = typeof seatBuffInitialState;
+
 const seatsActivationInitialState = {
   general: false,
   sale: false,
@@ -24,6 +30,8 @@ const moviegoersInitialState = {
   youth: 0,
 };
 
+export type Moviegoers = typeof moviegoersInitialState;
+
 export default function Theater() {
   const [seatBuff, setSeatBuff] = useState(seatBuffInitialState);
   const [moviegoers, setMoviegoers] = useState(moviegoersInitialState);
@@ -32,12 +40,19 @@ export default function Theater() {
     seatsActivationInitialState
   );
 
+  const resetHandler = () => {
+    setSeatBuff(seatBuffInitialState);
+    setMoviegoers(moviegoersInitialState);
+    setIsHandicap(false);
+    setSeatsActivation(seatsActivationInitialState);
+  };
   const theaterClickHandler = (name: keyof typeof moviegoers, num: number) => {
     const otherName = name === "adult" ? "youth" : "adult";
     const expectedMoviegoers = moviegoers[otherName] + num;
 
     if (expectedMoviegoers === 0) {
       setSeatsActivation(seatsActivationInitialState);
+      setSeatBuff(seatBuffInitialState);
     } else {
       if (isHandicap) {
         if (expectedMoviegoers > 3) {
@@ -107,6 +122,92 @@ export default function Theater() {
     setIsHandicap(!isHandicap);
   };
 
+  const seatClickHandler = (
+    line: SeatsLine,
+    seatType: SeatType,
+    seatNum: number,
+    disabled: boolean
+  ) => {
+    if (disabled) return;
+    const totalMoviegors = moviegoers.adult + moviegoers.youth;
+    if (totalMoviegors === 0) return;
+
+    const { adult, youth } = seatBuff.cnt;
+    const currentTotalCnt = adult + youth;
+
+    if (!seatBuff[line].includes(seatNum)) {
+      const moviegoersType = adult < moviegoers.adult ? "adult" : "youth";
+      const expectedCount = moviegoersType === "adult" ? adult + 1 : youth + 1;
+
+      const newbuff = {
+        ...seatBuff,
+        [line]: [...seatBuff[line], seatNum],
+        cnt: {
+          ...seatBuff.cnt,
+          [moviegoersType]: expectedCount,
+        },
+      };
+      setSeatBuff(newbuff);
+      console.log(expectedCount);
+      console.log(totalMoviegors);
+      const expectedTotalCount =
+        moviegoersType === "adult"
+          ? youth + expectedCount
+          : adult + expectedCount;
+
+      if (expectedTotalCount < totalMoviegors) {
+        setSeatsActivation({
+          ...seatsActivation,
+          [seatType]: true,
+        });
+      } else if (expectedTotalCount === totalMoviegors) {
+        setSeatsActivation(seatsActivationInitialState);
+      }
+    } else {
+      const moviegoersType =
+        currentTotalCnt > moviegoers.youth ? "adult" : "youth";
+      const expectedCount = moviegoersType === "adult" ? adult - 1 : youth - 1;
+      const expectedTotalCount =
+        moviegoersType === "adult"
+          ? youth + expectedCount
+          : adult + expectedCount;
+
+      const newbuff = {
+        ...seatBuff,
+        [line]: [...seatBuff[line].filter((num) => num !== seatNum)],
+        cnt: {
+          ...seatBuff.cnt,
+          [moviegoersType]: expectedCount < 0 ? 0 : expectedCount,
+        },
+      };
+      setSeatBuff(newbuff);
+
+      if (
+        expectedTotalCount < totalMoviegors &&
+        totalMoviegors === currentTotalCnt
+      ) {
+        if (seatType === "handicap") {
+          setSeatsActivation({
+            ...seatsActivation,
+            [seatType]: true,
+          });
+        } else if (seatType === "general" && totalMoviegors === 1) {
+          setSeatsActivation({
+            handicap: false,
+            general: true,
+            sale: false,
+          });
+        } else {
+          setSeatsActivation({
+            handicap: false,
+            general: true,
+            sale: true,
+          });
+        }
+      }
+    }
+  };
+
   return (
     <TheaterContainer>
       <TheaterTitle>인원/좌석</TheaterTitle>
@@ -116,9 +217,13 @@ export default function Theater() {
         theaterClickHandler={theaterClickHandler}
         handicapCheckboxHandler={handicapCheckboxHandler}
       />
-      <Seats seatsActivation={seatsActivation} />
+      <Seats
+        seatsActivation={seatsActivation}
+        seatBuff={seatBuff}
+        seatClickHandler={seatClickHandler}
+      />
       <ResetBox>
-        <button>좌석 선택 초기화</button>
+        <button onClick={resetHandler}>좌석 선택 초기화</button>
       </ResetBox>
     </TheaterContainer>
   );

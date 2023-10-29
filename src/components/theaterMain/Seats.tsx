@@ -1,11 +1,22 @@
 import styled from "styled-components";
-import { SeatsActivation } from "../Theater";
+import { SeatBuff, SeatType, SeatsActivation, SeatsLine } from "../Theater";
 
 interface SeatsProps {
   seatsActivation: SeatsActivation;
+  seatBuff: SeatBuff;
+  seatClickHandler: (
+    line: SeatsLine,
+    seatType: SeatType,
+    seatNum: number,
+    disabled: boolean
+  ) => void;
 }
 
-export default function Seats({ seatsActivation }: SeatsProps) {
+export default function Seats({
+  seatsActivation,
+  seatBuff,
+  seatClickHandler,
+}: SeatsProps) {
   const seatsRowTitle = ["A", "B", "C"] as const;
   const seatsRowData = Array.from({ length: 13 }, (_, i) => i + 1);
 
@@ -18,14 +29,17 @@ export default function Seats({ seatsActivation }: SeatsProps) {
           {seatsRowData.map((num) => {
             const seatType =
               title === "C" ? (num < 11 ? "sale" : "handicap") : "general";
-            // const clicked = seatBuff[title].includes(num)
-            const disabled = seatsActivation[seatType];
+            const clicked = seatBuff[title].includes(num);
+            const disabled = !clicked ? !seatsActivation[seatType] : false;
             return (
               <SeatBtn
                 key={`${title}-${num}`}
                 $seatType={seatType}
-                $disabled={!disabled}
-                $clicked={false}
+                $disabled={disabled}
+                $clicked={clicked}
+                onClick={() => {
+                  seatClickHandler(title, seatType, num, disabled);
+                }}
               >
                 {num}
               </SeatBtn>
@@ -86,8 +100,8 @@ const SeatBtn = styled.button<SeatBtnProp>`
   border: none;
   margin-right: 1px;
   background-color: ${({ $disabled, $clicked, $seatType, theme }) => {
+    if ($clicked) return theme.seatBackgroundColor.clicked;
     if ($disabled) return theme.seatBackgroundColor.disabled;
-    else if ($clicked) return theme.seatBackgroundColor.clicked;
-    else return theme.seatBackgroundColor[$seatType];
+    return theme.seatBackgroundColor[$seatType];
   }};
 `;

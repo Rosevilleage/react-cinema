@@ -1,11 +1,8 @@
 import styled from "styled-components";
 import Theatergoers from "./Theatergoers";
 import PriceInfo from "./PriceInfo";
+import { Moviegoers } from "../Theater";
 
-export interface Moviegoers {
-  adult: number;
-  youth: number;
-}
 interface TheatergoersAndPriceInfoProps {
   moviegoers: Moviegoers;
   isHandicap: boolean;
