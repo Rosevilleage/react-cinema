@@ -83,7 +83,6 @@ export default function Theater() {
     } else {
       setPrice(caculator[operator](targetNumber, 1));
     }
-    console.log(seatType, moviegoersType);
   };
 
   const theaterClickHandler = (name: keyof typeof moviegoers, num: number) => {
@@ -96,35 +95,36 @@ export default function Theater() {
       setIsHandicap(false);
       setPrice(0);
     } else {
+      const { adult, youth } = seatBuff.cnt;
+      const totalSeatCnt = adult + youth;
+      if (totalSeatCnt > expectedMoviegoers) {
+        if (
+          !confirm(
+            "선택된 좌석보다 변경한 관람객의 수가 적습니다. 관람객 수를 변경하시겠습니까?"
+          )
+        )
+          return;
+        else {
+          setSeatBuff(seatBuffInitialState);
+          setPrice(0);
+        }
+      }
       if (isHandicap) {
         if (expectedMoviegoers > 3) {
           window.alert(
             "장애인 좌석은 최대 3석입니다. 3인 이하로 선택해 주세요."
           );
           return;
-        } else {
-          seatsOneTypeActivation("handicap");
         }
+        seatsOneTypeActivation("handicap");
       } else {
-        const { adult, youth } = seatBuff.cnt;
-        if (adult + youth > expectedMoviegoers) {
-          if (
-            !confirm(
-              "선택된 좌석보다 변경한 관람객의 수가 적습니다. 관람객 수를 변경하시겠습니까?"
-            )
-          )
-            return;
-          else {
-            setSeatBuff(seatBuffInitialState);
-            setPrice(0);
-          }
-        } else if (expectedMoviegoers < 2) {
+        if (expectedMoviegoers < 2 || expectedMoviegoers % 2 !== 0) {
           setSeatsActivation({
             general: true,
             sale: false,
             handicap: false,
           });
-        } else {
+        } else if (expectedMoviegoers % 2 === 0) {
           setSeatsActivation({
             general: true,
             sale: true,
@@ -170,7 +170,6 @@ export default function Theater() {
   ) => {
     if (disabled) return;
     const totalMoviegors = moviegoers.adult + moviegoers.youth;
-    // if (totalMoviegors === 0) return;
 
     const { adult, youth } = seatBuff.cnt;
     const currentTotalCnt = adult + youth;
