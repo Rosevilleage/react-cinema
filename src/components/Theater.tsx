@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import TheatergoersAndPriceInfo from "./theaterMain/TheatergoersAndPriceInfo";
 import Seats from "./theaterMain/Seats";
@@ -50,16 +50,30 @@ export default function Theater() {
     setPrice(0);
   };
 
-  const seatsOneTypeActivation = (seatType: keyof SeatsActivation) => {
+  const seatsActivationHandler = (
+    seatTypeOrBoolean: keyof SeatsActivation | boolean
+  ) => {
     const [disabledSeat_1, disabledSeat_2] = Object.keys(
       seatsActivation
-    ).filter((seat) => seat !== seatType);
-    setSeatsActivation({
-      ...seatsActivation,
-      [seatType]: true,
-      [disabledSeat_1]: false,
-      [disabledSeat_2]: false,
-    });
+    ).filter((seat) => seat !== seatTypeOrBoolean);
+    if (
+      seatTypeOrBoolean === "general" ||
+      seatTypeOrBoolean === "sale" ||
+      seatTypeOrBoolean === "handicap"
+    ) {
+      setSeatsActivation({
+        ...seatsActivation,
+        [seatTypeOrBoolean]: true,
+        [disabledSeat_1]: false,
+        [disabledSeat_2]: false,
+      });
+    } else {
+      setSeatsActivation({
+        general: seatTypeOrBoolean,
+        sale: seatTypeOrBoolean,
+        handicap: seatTypeOrBoolean,
+      });
+    }
   };
 
   const priceChangeHandler = (
@@ -79,7 +93,7 @@ export default function Theater() {
         : 7000;
 
     if (seatType === "sale") {
-      setPrice(caculator[operator](targetNumber, 0.8));
+      setPrice(caculator[operator](targetNumber * 2, 0.8));
     } else {
       setPrice(caculator[operator](targetNumber, 1));
     }
@@ -88,7 +102,7 @@ export default function Theater() {
   const theaterClickHandler = (name: keyof typeof moviegoers, num: number) => {
     const otherName = name === "adult" ? "youth" : "adult";
     const expectedMoviegoers = moviegoers[otherName] + num;
-
+    if (moviegoers[name] === num) return;
     if (expectedMoviegoers === 0) {
       setSeatsActivation(seatsActivationInitialState);
       setSeatBuff(seatBuffInitialState);
@@ -116,7 +130,7 @@ export default function Theater() {
           );
           return;
         }
-        seatsOneTypeActivation("handicap");
+        seatsActivationHandler("handicap");
       } else {
         if (expectedMoviegoers < 2 || expectedMoviegoers % 2 !== 0) {
           setSeatsActivation({
@@ -146,11 +160,7 @@ export default function Theater() {
         alert("장애인 좌석은 최대 3석입니다. 3인 이하로 선택해 주세요.");
         return;
       }
-      setSeatsActivation({
-        general: false,
-        sale: false,
-        handicap: true,
-      });
+      seatsActivationHandler("handicap");
     } else {
       setSeatsActivation({
         general: true,
@@ -170,64 +180,110 @@ export default function Theater() {
   ) => {
     if (disabled) return;
     const totalMoviegors = moviegoers.adult + moviegoers.youth;
-
     const { adult, youth } = seatBuff.cnt;
     const currentTotalCnt = adult + youth;
 
-    if (!seatBuff[line].includes(seatNum)) {
-      const moviegoersType = adult < moviegoers.adult ? "adult" : "youth";
-      const expectedCount = moviegoersType === "adult" ? adult + 1 : youth + 1;
-      const newbuff = {
-        ...seatBuff,
-        [line]: [...seatBuff[line], seatNum],
-        cnt: {
-          ...seatBuff.cnt,
-          [moviegoersType]: expectedCount,
-        },
-      };
-      setSeatBuff(newbuff);
+    const seatBuffUpdator = (operator: "+" | "-") => {
+      /**sale 좌석이면 선택 좌석 수를 2씩 늘리고 아니면 1씩 늘린다. */
+      const numOfSeatsSelected = seatType === "sale" ? 2 : 1;
 
-      priceChangeHandler(seatType, moviegoersType, "+");
-
-      const expectedTotalCount =
-        moviegoersType === "adult"
-          ? youth + expectedCount
-          : adult + expectedCount;
-
-      if (expectedTotalCount < totalMoviegors) {
-        seatsOneTypeActivation(seatType);
-      } else if (expectedTotalCount === totalMoviegors) {
-        setSeatsActivation(seatsActivationInitialState);
-      }
-    } else {
+      /** 자리를 선택할때 성인이 선택한 좌석수 보다 성인 관람객 수가 크면 해당 좌석을 성인이 선택한다 아니면 청소년이 선택한다.
+       자리를 취소하는 경우 선택한 좌석 수 가 청소년 관람객 수보다 크면 성인이 취소한다. 아니면 청소년이 취소한다. */
       const moviegoersType =
-        currentTotalCnt > moviegoers.youth ? "adult" : "youth";
-      const expectedCount = moviegoersType === "adult" ? adult - 1 : youth - 1;
+        operator === "+"
+          ? adult < moviegoers.adult
+            ? "adult"
+            : "youth"
+          : currentTotalCnt > moviegoers.youth
+          ? "adult"
+          : "youth";
+
+      // sale 좌석 계산 다시해야함
+      const expectedCount =
+        operator === "+"
+          ? moviegoersType === "adult"
+            ? adult + numOfSeatsSelected
+            : youth + numOfSeatsSelected
+          : moviegoersType === "adult"
+          ? adult - numOfSeatsSelected
+          : youth - numOfSeatsSelected;
+
+      const otherMoviegoersType =
+        moviegoersType === "adult" ? "youth" : "adult";
+      const nextSeatCnount =
+        operator === "+"
+          ? seatType === "sale" && expectedCount > moviegoers[moviegoersType]
+            ? {
+                ...seatBuff.cnt,
+                [moviegoersType]: moviegoers[moviegoersType],
+                [otherMoviegoersType]: seatBuff.cnt[otherMoviegoersType] + 1,
+              }
+            : { ...seatBuff.cnt, [moviegoersType]: expectedCount }
+          : seatType === "sale" && expectedCount < 0
+          ? {
+              ...seatBuff.cnt,
+              [moviegoersType]: 0,
+              [otherMoviegoersType]: seatBuff.cnt[otherMoviegoersType] - 1,
+            }
+          : { ...seatBuff.cnt, [moviegoersType]: expectedCount };
+
       const expectedTotalCount =
         moviegoersType === "adult"
           ? youth + expectedCount
           : adult + expectedCount;
 
-      const newbuff = {
-        ...seatBuff,
-        [line]: [...seatBuff[line].filter((num) => num !== seatNum)],
-        cnt: {
-          ...seatBuff.cnt,
-          [moviegoersType]: expectedCount < 0 ? 0 : expectedCount,
-        },
-      };
-      setSeatBuff(newbuff);
+      /**선택한 sale 좌석의 번호가 홀수면 오른쪽 좌석도 선택에 포함 시키고 아니면 왼쪽 좌석도 선택에 포함시킨다. */
+      const newSeat =
+        numOfSeatsSelected === 2
+          ? seatNum % 2 === 0
+            ? [seatNum - 1, seatNum]
+            : [seatNum, seatNum + 1]
+          : [seatNum];
 
-      priceChangeHandler(seatType, moviegoersType, "-");
+      const nextSeats =
+        operator === "+"
+          ? [...seatBuff[line], ...newSeat]
+          : [
+              ...seatBuff[line].filter(
+                (seat) => seat !== newSeat[0] && seat !== newSeat[1]
+              ),
+            ];
 
-      if (
-        expectedTotalCount < totalMoviegors &&
-        totalMoviegors === currentTotalCnt
-      ) {
-        seatsOneTypeActivation(seatType);
+      if (operator === "+") {
+        if (expectedTotalCount < totalMoviegors)
+          seatsActivationHandler(seatType);
+        else if (expectedTotalCount === totalMoviegors)
+          setSeatsActivation(seatsActivationInitialState);
+        else if (expectedTotalCount > totalMoviegors) {
+          alert("관람객 수보다 많은 좌석을 선택했습니다.");
+          return;
+        }
+      } else {
+        if (
+          expectedTotalCount < totalMoviegors &&
+          totalMoviegors === currentTotalCnt
+        )
+          seatsActivationHandler(seatType);
       }
-    }
+
+      const nextBuff = {
+        ...seatBuff,
+        [line]: nextSeats,
+        cnt: nextSeatCnount,
+      };
+
+      setSeatBuff(nextBuff);
+      priceChangeHandler(seatType, moviegoersType, operator);
+    };
+
+    if (!seatBuff[line].includes(seatNum)) seatBuffUpdator("+");
+    else seatBuffUpdator("-");
   };
+
+  useEffect(() => {
+    console.log("adult", seatBuff.cnt.adult);
+    console.log("youth", seatBuff.cnt.youth);
+  }, [moviegoers]);
 
   return (
     <TheaterContainer>
