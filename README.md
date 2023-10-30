@@ -6,6 +6,10 @@
 
 ![Alt text](<화면 기록 2023-10-30 오후 6.18.30 (1).gif>)
 
-### 추가적인 요구사항
+## 추가적인 요구사항
 
 - sale 좌석(C-1 ~ C-10)은 2인을 기준으로 한다. sale 좌석을 선택했을 시 두 좌석씩 선택 되도록 구현한다.
+
+## meaning
+
+<a href='https://velog.io/@cksgml1914/%EA%B3%BC%EC%A0%9C%ED%85%8C%EC%8A%A4%ED%8A%B8-react%EB%A1%9C-%EB%8B%A4%EC%8B%9C-%ED%92%80%EC%96%B4%EB%B3%B8-%EC%86%8C%EA%B0%90'>Link<a>
